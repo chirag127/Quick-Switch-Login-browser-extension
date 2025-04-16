@@ -4,12 +4,12 @@ A browser extension that allows users to easily save and restore complete web se
 
 ## Features
 
-- **Session Saving**: Save the current session state (cookies, localStorage, sessionStorage) of any website.
-- **Session Restoring**: Restore a previously saved session for a website, replacing the current session state.
-- **User Authentication**: Secure Email/Password authentication system for user accounts.
-- **Session Synchronization**: Synchronize saved sessions securely across devices for logged-in users.
-- **Offline Functionality**: Works reliably even when offline (local save/restore).
-- **Intuitive Interface**: Easy-to-use popup and context menu for managing sessions.
+-   **Session Saving**: Save the current session state (cookies, localStorage, sessionStorage) of any website.
+-   **Session Restoring**: Restore a previously saved session for a website, replacing the current session state.
+-   **User Authentication**: Secure Email/Password authentication system for user accounts.
+-   **Session Synchronization**: Synchronize saved sessions securely across devices for logged-in users.
+-   **Offline Functionality**: Works reliably even when offline (local save/restore).
+-   **Intuitive Interface**: Easy-to-use popup and context menu for managing sessions.
 
 ## Project Structure
 
@@ -26,7 +26,8 @@ extension/
 ├── popup/               # Popup UI
 │   ├── popup.html       # Popup HTML
 │   ├── popup.css        # Popup styles
-│   └── popup.js         # Popup logic
+│   ├── popup.js         # Popup logic
+│   └── save-session.html # Save session popup for context menu
 ├── background/          # Background scripts
 │   └── background.js    # Background service worker
 ├── js/                  # Shared JavaScript modules
@@ -63,76 +64,104 @@ backend/
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- MongoDB (local or cloud instance)
-- Chrome/Edge browser (for extension development)
+-   Node.js (v14 or higher)
+-   MongoDB (local or cloud instance)
+-   Chrome/Edge browser (for extension development)
 
 ### Backend Setup
 
 1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
+
+    ```
+    cd backend
+    ```
 
 2. Install dependencies:
-   ```
-   npm install
-   ```
+
+    ```
+    npm install
+    ```
 
 3. Create a `.env` file with the following variables:
-   ```
-   PORT=3000
-   MONGODB_URI=mongodb://localhost:27017/quick-switch-login
-   JWT_SECRET=your_jwt_secret_key_change_in_production
-   JWT_EXPIRATION=7d
-   ```
+
+    ```
+    PORT=3000
+    MONGODB_URI=mongodb://localhost:27017/quick-switch-login
+    JWT_SECRET=your_jwt_secret_key_change_in_production
+    JWT_EXPIRATION=7d
+    ```
 
 4. Start the server:
-   ```
-   npm start
-   ```
-   
-   For development with auto-reload:
-   ```
-   npm run dev
-   ```
+
+    ```
+    npm start
+    ```
+
+    For development with auto-reload:
+
+    ```
+    npm run dev
+    ```
 
 ### Extension Setup
 
 1. Generate the extension icons:
-   ```
-   npm install sharp
-   node generate-icons.js
-   ```
+
+    ```
+    npm install sharp
+    node generate-icons.js
+    ```
 
 2. Load the extension in Chrome/Edge:
-   - Open Chrome/Edge and navigate to `chrome://extensions` or `edge://extensions`
-   - Enable "Developer mode"
-   - Click "Load unpacked" and select the `extension` directory
+    - Open Chrome/Edge and navigate to `chrome://extensions` or `edge://extensions`
+    - Enable "Developer mode"
+    - Click "Load unpacked" and select the `extension` directory
 
 ## Usage
 
 1. **Save a Session**:
-   - Navigate to a website where you're logged in
-   - Click the extension icon or right-click on the page
-   - Select "Save Current Session" and provide a name
+
+    - Navigate to a website where you're logged in
+    - Click the extension icon or right-click on the page
+    - Select "Save Current Session" and provide a name
+    - The session will be saved locally and synced if you're logged in
 
 2. **Restore a Session**:
-   - Navigate to the same website
-   - Click the extension icon or right-click on the page
-   - Select "Restore Session" and choose the session to restore
+
+    - Navigate to the same website domain as the saved session
+    - Click the extension icon in the toolbar
+    - Find the session in the list and click "Restore"
+    - Confirm the restoration
+    - The page will reload with the restored session
 
 3. **Sync Across Devices**:
-   - Sign up or log in using the extension popup
-   - Your sessions will automatically sync across devices where you're logged in
+
+    - Create an account or log in using the extension popup
+    - Your sessions will automatically sync across devices where you're logged in
+
+4. **Configure Website Restrictions**:
+
+    - Click the "Settings" button in the extension popup
+    - Choose between blacklist mode (disable on specific sites) or whitelist mode (enable only on specific sites)
+    - Add domains to the list (one per line)
+    - Save your settings
+
+5. **Manage Your Account**:
+    - Reset your password if forgotten
+    - Delete your account if needed (this will remove all synced sessions)
 
 ## Security Considerations
 
-- All communication between the extension and backend uses HTTPS
-- Passwords are securely hashed using bcrypt
-- JWT is used for authentication
-- Rate limiting is implemented to prevent brute-force attacks
-- The extension requests only the necessary permissions
+-   All communication between the extension and backend uses HTTPS
+-   Passwords are securely hashed using bcrypt with a strong salt
+-   JWT is used for secure authentication with expiration
+-   Rate limiting is implemented to prevent brute-force attacks
+-   The extension requests only the necessary permissions
+-   Session data is stored securely and only accessible to the authenticated user
+-   Proper authorization checks ensure users can only access their own data
+-   Input validation and sanitization to prevent injection attacks
+-   Secure HTTP headers with Helmet middleware
+-   CORS configuration to restrict API access
 
 ## License
 

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Save Session</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      font-size: 14px;
+      color: #333;
+      background-color: #fff;
+      padding: 16px;
+      width: 350px;
+      margin: 0;
+    }
+    
+    h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: #3498db;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #2980b9;
+    }
+    
+    .btn-secondary {
+      background-color: #e0e0e0;
+      color: #333;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #bdbdbd;
+    }
+    
+    .domain-info {
+      margin-bottom: 16px;
+      padding: 8px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .domain-favicon {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+    }
+    
+    .toast {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 8px 16px;
+      border-radius: 4px;
+      color: white;
+      font-size: 14px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .toast.show {
+      opacity: 1;
+    }
+    
+    .toast.success {
+      background-color: #2ecc71;
+    }
+    
+    .toast.error {
+      background-color: #e74c3c;
+    }
+    
+    .toast.warning {
+      background-color: #f39c12;
+    }
+    
+    .toast.info {
+      background-color: #3498db;
+    }
+  </style>
+</head>
+<body>
+  <h2>Save Current Session</h2>
+  
+  <div class="domain-info">
+    <img id="domain-favicon" class="domain-favicon" src="" alt="">
+    <span id="domain-name"></span>
+  </div>
+  
+  <form id="save-session-form">
+    <div class="form-group">
+      <label for="session-name">Session Name</label>
+      <input type="text" id="session-name" placeholder="e.g., Work Account" required>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Save</button>
+      <button type="button" id="cancel-btn" class="btn btn-secondary">Cancel</button>
+    </div>
+  </form>
+  
+  <div id="toast" class="toast"></div>
+  
+  <script src="../js/utils.js"></script>
+  <script>
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const domain = urlParams.get('domain');
+    const tabId = parseInt(urlParams.get('tabId'));
+    
+    // DOM elements
+    const domainFavicon = document.getElementById('domain-favicon');
+    const domainName = document.getElementById('domain-name');
+    const sessionNameInput = document.getElementById('session-name');
+    const saveSessionForm = document.getElementById('save-session-form');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const toast = document.getElementById('toast');
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!domain || !tabId) {
+        showToast('Invalid parameters. Please try again.', 'error');
+        setTimeout(() => window.close(), 3000);
+        return;
+      }
+      
+      // Set domain info
+      domainFavicon.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+      domainFavicon.alt = domain;
+      domainName.textContent = domain;
+      
+      // Set default session name
+      sessionNameInput.value = `Session for ${domain}`;
+      sessionNameInput.focus();
+      sessionNameInput.select();
+    });
+    
+    // Show toast notification
+    function showToast(message, type = 'info', duration = 3000) {
+      // Clear any existing toast
+      clearTimeout(toast.timeoutId);
+      
+      // Set toast content and type
+      toast.textContent = message;
+      toast.className = 'toast show';
+      toast.classList.add(type);
+      
+      // Show the toast
+      toast.style.display = 'block';
+      
+      // Hide the toast after duration
+      toast.timeoutId = setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          toast.style.display = 'none';
+          toast.className = 'toast';
+        }, 300);
+      }, duration);
+    }
+    
+    // Save session
+    async function saveSession() {
+      const sessionName = sessionNameInput.value.trim();
+      
+      if (!sessionName) {
+        showToast('Please enter a session name.', 'warning');
+        return;
+      }
+      
+      try {
+        showToast('Saving session...', 'info');
+        
+        const result = await chrome.runtime.sendMessage({
+          action: 'saveSession',
+          domain,
+          sessionName,
+          tabId
+        });
+        
+        if (result.success) {
+          showToast('Session saved successfully.', 'success');
+          setTimeout(() => window.close(), 1500);
+        } else {
+          showToast(`Failed to save session: ${result.error}`, 'error');
+        }
+      } catch (error) {
+        console.error('Failed to save session:', error);
+        showToast('Failed to save session. Please try again.', 'error');
+      }
+    }
+    
+    // Event listeners
+    saveSessionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      saveSession();
+    });
+    
+    cancelBtn.addEventListener('click', () => {
+      window.close();
+    });
+  </script>
+</body>
+</html>

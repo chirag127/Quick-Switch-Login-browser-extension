@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Switch Login</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Quick Switch Login</h1>
+      <div id="sync-status" class="sync-status"></div>
+    </header>
+
+    <!-- Authentication Section -->
+    <div id="auth-section" class="auth-section">
+      <div id="logged-out-view">
+        <div class="auth-buttons">
+          <button id="sign-in-btn" class="btn btn-primary">Sign In</button>
+          <button id="sign-up-btn" class="btn btn-secondary">Sign Up</button>
+        </div>
+        <p class="auth-note">Sign in to sync sessions across devices</p>
+      </div>
+      
+      <div id="logged-in-view" class="hidden">
+        <div class="user-info">
+          <span id="user-email"></span>
+          <button id="logout-btn" class="btn btn-small">Logout</button>
+        </div>
+        <div class="account-actions">
+          <button id="reset-password-btn" class="btn btn-small btn-text">Reset Password</button>
+          <button id="delete-account-btn" class="btn btn-small btn-text btn-danger">Delete Account</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms Section -->
+    <div id="forms-section">
+      <!-- Sign In Form -->
+      <form id="sign-in-form" class="auth-form hidden">
+        <h2>Sign In</h2>
+        <div class="form-group">
+          <label for="signin-email">Email</label>
+          <input type="email" id="signin-email" required>
+        </div>
+        <div class="form-group">
+          <label for="signin-password">Password</label>
+          <input type="password" id="signin-password" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Sign In</button>
+          <button type="button" id="cancel-signin" class="btn btn-secondary">Cancel</button>
+        </div>
+        <p class="form-link">
+          <a href="#" id="forgot-password-link">Forgot Password?</a>
+        </p>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form id="sign-up-form" class="auth-form hidden">
+        <h2>Sign Up</h2>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-confirm-password">Confirm Password</label>
+          <input type="password" id="signup-confirm-password" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Sign Up</button>
+          <button type="button" id="cancel-signup" class="btn btn-secondary">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Forgot Password Form -->
+      <form id="forgot-password-form" class="auth-form hidden">
+        <h2>Reset Password</h2>
+        <div class="form-group">
+          <label for="reset-email">Email</label>
+          <input type="email" id="reset-email" required>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Send Reset Link</button>
+          <button type="button" id="cancel-reset" class="btn btn-secondary">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Delete Account Confirmation -->
+      <div id="delete-account-confirm" class="auth-form hidden">
+        <h2>Delete Account</h2>
+        <p>Are you sure you want to delete your account? This will permanently remove all your synced sessions.</p>
+        <div class="form-actions">
+          <button id="confirm-delete-account" class="btn btn-danger">Delete Account</button>
+          <button id="cancel-delete-account" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Session Section -->
+    <div id="save-session-section" class="save-session-section">
+      <button id="save-session-btn" class="btn btn-primary btn-block" disabled>
+        Save Current Session
+      </button>
+    </div>
+
+    <!-- Save Session Modal -->
+    <div id="save-session-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Save Current Session</h2>
+        <form id="save-session-form">
+          <div class="form-group">
+            <label for="session-name">Session Name</label>
+            <input type="text" id="session-name" placeholder="e.g., Work Account" required>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button type="button" id="cancel-save" class="btn btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Sessions List Section -->
+    <div id="sessions-section" class="sessions-section">
+      <h2>Saved Sessions</h2>
+      <div id="no-sessions-message" class="no-sessions-message">
+        No saved sessions yet. Navigate to a website and click "Save Current Session".
+      </div>
+      <div id="sessions-list" class="sessions-list"></div>
+    </div>
+
+    <!-- Restore Confirmation Modal -->
+    <div id="restore-confirm-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Restore Session</h2>
+        <p>Replace current session data for <span id="restore-domain"></span> with the saved session '<span id="restore-name"></span>'?</p>
+        <div class="form-actions">
+          <button id="confirm-restore" class="btn btn-primary">Replace</button>
+          <button id="cancel-restore" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirm-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Delete Session</h2>
+        <p>Are you sure you want to delete the session '<span id="delete-name"></span>'?</p>
+        <div class="form-actions">
+          <button id="confirm-delete" class="btn btn-danger">Delete</button>
+          <button id="cancel-delete" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reload Prompt Modal -->
+    <div id="reload-prompt-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Session Restored</h2>
+        <p>Session '<span id="restored-name"></span>' restored. Reload the page for changes to take effect?</p>
+        <div class="form-actions">
+          <button id="reload-now" class="btn btn-primary">Reload Now</button>
+          <button id="reload-later" class="btn btn-secondary">Later</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Section -->
+    <div class="settings-section">
+      <button id="settings-btn" class="btn btn-text">Settings</button>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+      <div class="modal-content">
+        <h2>Settings</h2>
+        <div class="settings-group">
+          <h3>Website Restrictions</h3>
+          <div class="form-group">
+            <label>
+              <input type="radio" name="restriction-mode" id="blacklist-mode" checked>
+              Blacklist Mode (disable on specific sites)
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input type="radio" name="restriction-mode" id="whitelist-mode">
+              Whitelist Mode (enable only on specific sites)
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="domain-list">Domain List (one per line)</label>
+            <textarea id="domain-list" rows="5" placeholder="example.com"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button id="save-settings" class="btn btn-primary">Save Settings</button>
+          <button id="cancel-settings" class="btn btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden"></div>
+  </div>
+
+  <script src="../js/utils.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/session.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
